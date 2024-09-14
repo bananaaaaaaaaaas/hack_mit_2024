@@ -122,3 +122,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     marginRight: 8
+  }
+)}
