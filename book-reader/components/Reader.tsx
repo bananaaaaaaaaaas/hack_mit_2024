@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
 
 import { ThemedView } from '@/components/ThemedView';
@@ -26,7 +26,7 @@ const ImageReader = () => {
     <ThemedView style={styles.imageReader}>
       <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
       <View style={styles.imageViewer}>
-        <Image source={require('@/assets/images/document-page.png')} style={styles.documentImage} />
+        <Image source={require('@/assets/images/react-logo.png')} style={styles.documentImage} />
       </View>
       <View style={styles.controls}>
         <Button title="Previous" onPress={() => setCurrentPage(Math.max(currentPage - 1, 1))} />
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     padding: 8,
-    marginRight: 8
-  }
-)}
+    marginRight: 8,
+    borderRadius: 4
+  },
+});
