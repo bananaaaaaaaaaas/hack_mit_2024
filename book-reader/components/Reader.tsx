@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
+=======
+import { useState } from 'react';
+import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+
+>>>>>>> 86154c0 (make scrolling kinda work)
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -35,6 +41,7 @@ const ImageReader = () => {
 
   return (
     <ThemedView style={styles.imageReader}>
+<<<<<<< HEAD
       <ThemedText type="title">Document Viewer - Page {padNumber(currentPage)}</ThemedText>
       <View style={styles.imageViewer}>
         <Image
@@ -42,6 +49,24 @@ const ImageReader = () => {
           style={styles.documentImage}
         />
       </View>
+=======
+      <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
+
+      {/* Wrap the image in a ScrollView to make it scrollable */}
+      <ScrollView 
+        style={styles.imageViewer} 
+        horizontal={false}  // Allow horizontal scrolling
+        contentContainerStyle={{ flexGrow: 1 }} // Ensures it can scroll vertically as well
+      >
+        <ScrollView>
+          <Image 
+            source={require('@/assets/images/2785.png')} 
+            style={styles.documentImage} 
+          />
+        </ScrollView>
+      </ScrollView>
+
+>>>>>>> 86154c0 (make scrolling kinda work)
       <View style={styles.controls}>
         <Button title="Previous" onPress={handlePrevious} />
         <Button title="Next" onPress={handleNext} />
@@ -96,6 +121,7 @@ const styles = StyleSheet.create({
   },
   imageViewer: {
     flex: 1,
+<<<<<<< HEAD
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -103,6 +129,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 300,
     resizeMode: 'contain',
+=======
+    backgroundColor: '#fff',
+  },
+  documentImage: {
+    width: '100%', // Set large width
+    height: 800, // Set large height
+    resizeMode: 'contain', // Contain the image but let it scroll
+>>>>>>> 86154c0 (make scrolling kinda work)
   },
   controls: {
     flexDirection: 'row',
@@ -133,6 +167,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     marginRight: 8,
-    borderRadius: 4
+    borderRadius: 4,
   },
 });
