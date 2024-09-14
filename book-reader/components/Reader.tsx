@@ -26,7 +26,7 @@ const ImageReader = () => {
     <ThemedView style={styles.imageReader}>
       <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
       <View style={styles.imageViewer}>
-        <Image source={require('@/assets/images/react-logo.png')} style={styles.documentImage} />
+        <Image source={require('@/assets/images/2785.png')} style={styles.documentImage} />
       </View>
       <View style={styles.controls}>
         <Button title="Previous" onPress={() => setCurrentPage(Math.max(currentPage - 1, 1))} />
