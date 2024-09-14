@@ -80,19 +80,21 @@ const styles = StyleSheet.create({
   },
   imageReader: {
     flex: 2,
-    padding: 16,
+    padding: 0,
     backgroundColor: '#f5f5f5',
   },
   imageViewer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'scroll',
   },
   documentImage: {
     width: '100%',
-    height: 300,
-    resizeMode: 'contain',
+    height: '100%',
+    overflow: 'scroll',
   },
+
   controls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
