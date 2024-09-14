@@ -3,3 +3,4 @@ venv/
 .vscode
 node_modules
 /dist
+/testing_output
