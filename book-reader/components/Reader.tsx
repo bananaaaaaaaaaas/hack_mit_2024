@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
-
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+
+const padNumber = (num: number) => {
+    return num.toString().padStart(4, '0');
+};
 
 const AiChat = () => {
   return (
@@ -22,15 +25,26 @@ const AiChat = () => {
 const ImageReader = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
+  const handleNext = () => {
+    setCurrentPage((prevPage) => (prevPage < 999 ? prevPage + 1 : 999)); // Max limit is 999
+  };
+
+  const handlePrevious = () => {
+    setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1)); // Min limit is 1
+  };
+
   return (
     <ThemedView style={styles.imageReader}>
-      <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
+      <ThemedText type="title">Document Viewer - Page {padNumber(currentPage)}</ThemedText>
       <View style={styles.imageViewer}>
-        <Image source={require('@/assets/images/2785.png')} style={styles.documentImage} />
+        <Image
+          source={{ uri: `/assets/images/${padNumber(currentPage)}.png` }} // Dynamically load the image
+          style={styles.documentImage}
+        />
       </View>
       <View style={styles.controls}>
-        <Button title="Previous" onPress={() => setCurrentPage(Math.max(currentPage - 1, 1))} />
-        <Button title="Next" onPress={() => setCurrentPage(currentPage + 1)} />
+        <Button title="Previous" onPress={handlePrevious} />
+        <Button title="Next" onPress={handleNext} />
       </View>
     </ThemedView>
   );
@@ -48,10 +62,7 @@ export default function Reader() {
       </ThemedView>
 
       <View style={styles.bodyContainer}>
-        {/* Left side: Image Reader */}
         <ImageReader />
-
-        {/* Right side: AI Chat */}
         <AiChat />
       </View>
     </ThemedView>
@@ -80,21 +91,19 @@ const styles = StyleSheet.create({
   },
   imageReader: {
     flex: 2,
-    padding: 0,
+    padding: 16,
     backgroundColor: '#f5f5f5',
   },
   imageViewer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'scroll',
   },
   documentImage: {
     width: '100%',
-    height: '100%',
-    overflow: 'scroll',
+    height: 300,
+    resizeMode: 'contain',
   },
-
   controls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
