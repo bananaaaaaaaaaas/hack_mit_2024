@@ -1,8 +1,12 @@
-import { useState } from 'react';
-import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
-
+import { useState, useEffect } from 'react';
+import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView, Pressable} from 'react-native';
+import FileUpload from './FileUpload';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+
+const padNumber = (num: number) => {
+  return num.toString().padStart(4, '0');
+};
 
 const AiChat = () => {
   return (
@@ -19,39 +23,115 @@ const AiChat = () => {
   );
 };
 
-const ImageReader = () => {
+const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
   const [currentPage, setCurrentPage] = useState(1);
+
+  var [points, setPoints] = useState([]); // Store clicked points
+
+  const handleImageClick = (event) => {
+    const { locationX, locationY } = event.nativeEvent; // Get coordinates relative to the image
+    if (points.length == 2) { points = [];}
+    if (points.length < 2) {
+      setPoints([...points, { x: locationX, y: locationY }]); // Add up to two points
+    }
+  };
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') {
+        handleNext();
+      } else if (event.key === 'ArrowLeft') {
+        handlePrevious();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentPage, files]);
+
+  const handleNext = () => {
+    setCurrentPage((prevPage) => (prevPage < files.length ? prevPage + 1 : files.length));
+  };
+
+  const handlePrevious = () => {
+    setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1));
+  };
 
   return (
     <ThemedView style={styles.imageReader}>
       <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
-      <View style={styles.imageViewer}>
-        <Image source={require('@/assets/images/2785.png')} style={styles.documentImage} />
-      </View>
+
+      <ScrollView 
+        style={styles.imageViewer} 
+        horizontal={false} 
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <ScrollView>
+          <Pressable onPressIn={handleImageClick} onPressOut={handleImageClick}>
+            <View style={styles.imageViewer}>
+              {files.length > 0 && (
+                <Image
+                  source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }}
+                  style={styles.documentImage}
+                />
+              )}
+              {/* Render the selected points */}
+              {points.map((point, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.pointMarker,
+                    { left: point.x - 10, top: point.y - 10 },
+                  ]}
+                />
+              ))}
+            </View>
+          </Pressable>
+        </ScrollView>
+      </ScrollView>
+
       <View style={styles.controls}>
-        <Button title="Previous" onPress={() => setCurrentPage(Math.max(currentPage - 1, 1))} />
-        <Button title="Next" onPress={() => setCurrentPage(currentPage + 1)} />
+        <Button title="Previous" onPress={handlePrevious} disabled={currentPage === 1} />
+        <Button title="Next" onPress={handleNext} disabled={currentPage === files.length} />
+      </View>
+
+      {/* Display the coordinates of the two points */}
+      <View style={styles.coordinates}>
+        {points.length > 0 && <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>}
+        {points.length > 1 && <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>}
       </View>
     </ThemedView>
   );
 };
 
 export default function Reader() {
+  const [renamedFiles, setRenamedFiles] = useState<{ file: File; name: string }[]>([]);
+
+  const handleFilesUploaded = (files: File[]) => {
+    const renamedFiles = files.map((file, index) => {
+      const newName = `${padNumber(index + 1)}.png`;
+      return { file, name: newName };
+    });
+    setRenamedFiles(renamedFiles);
+  };
+
   return (
     <ThemedView style={styles.pageContainer}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Image Reader with AI Assistant</ThemedText>
         <View style={styles.headerControls}>
-          <Button title="Save" onPress={() => {}} />
+
+          <FileUpload onFilesUploaded={handleFilesUploaded} />
           <Button title="Help" onPress={() => {}} />
         </View>
       </ThemedView>
 
       <View style={styles.bodyContainer}>
-        {/* Left side: Image Reader */}
-        <ImageReader />
+        {/* Image reader for displaying the uploaded images */}
+        <ImageReader files={renamedFiles} />
 
-        {/* Right side: AI Chat */}
+        {/* AI Chat section */}
         <AiChat />
       </View>
     </ThemedView>
@@ -66,12 +146,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',  // Align upload button
     padding: 16,
     backgroundColor: '#333',
     color: '#fff',
   },
   headerControls: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 16,
   },
   bodyContainer: {
@@ -79,19 +161,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   imageReader: {
-    flex: 2,
+    flex: 3,
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
   imageViewer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   documentImage: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'contain',
+    width: '100%', // Set large width
+    height: 800, // Set large height
+    resizeMode: 'contain', // Contain the image but let it scroll
   },
   controls: {
     flexDirection: 'row',
@@ -122,6 +203,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     marginRight: 8,
-    borderRadius: 4
+    borderRadius: 4,
   },
+  pointMarker: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'red',
+    opacity: 0.7,
+  },
+  coordinates: {
+    marginTop: 16,
+    padding: 10,
+    backgroundColor: '#e9ecef',
+    borderRadius: 4,
+  }
 });
