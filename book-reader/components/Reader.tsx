@@ -23,16 +23,18 @@ const AiChat = () => {
   );
 };
 
-const sendScreenshotData = async () => {
+const sendScreenshotData = async (file: File) => {
   const [currentPage, setCurrentPage] = useState(1);
-  if (files.length === 0) return;
+  if (!file) {
+    console.error('No file selected.');
+    return;
+  }
 
   const formData = new FormData();
-  const file = files[currentPage - 1].file; // Current image file
-  formData.append('file', file, file.name); // Append the image file
+  formData.append('file', file);
 
   try {
-    const response = await fetch('ws://localhost:/8000/upload_bulk', {
+    const response = await fetch('ws://localhost:/3000/upload_bulk', {
       method: 'POST',
       body: formData,
       headers: {
@@ -63,6 +65,31 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
       setPoints([...points, { x: locationX, y: locationY }]); // Add up to two points
     }
   };
+
+  const sendScreenshotData = async () => {
+    const formData = new FormData();
+    const file = files[currentPage - 1].file; 
+    formData.append('file', file); 
+    try {
+      const response = await fetch('http://localhost:/3000/upload_bulk', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'multipart/form-data',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('File upload successful', data);
+      } else {
+        console.error('File upload failed', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowRight') {
@@ -129,7 +156,7 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
         {points.length > 0 && <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>}
         {points.length > 1 && <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>}
       </View>
-      <Button title="Send Screenshot" onPress={() => sendScreenshotData()} />
+      <Button title="Send Screenshot" onPress={sendScreenshotData} />
     </ThemedView>
   );
 };
@@ -163,7 +190,6 @@ export default function Reader() {
         {/* AI Chat section */}
         <AiChat />
       </View>
-      <Button title="Send Screenshot" onPress={() => sendScreenshotData()} />
     </ThemedView>
   );
 }
