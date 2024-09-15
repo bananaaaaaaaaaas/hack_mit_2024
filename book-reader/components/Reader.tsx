@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView, Pressable} from 'react-native';
-
+import FileUpload from './FileUpload';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -68,11 +68,13 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
       >
         <ScrollView>
           <Pressable onPressIn={handleImageClick} onPressOut={handleImageClick}>
-            <View>
-              <Image
-                source={{ uri: `/assets/images/${padNumber(currentPage)}.jpg` }}
-                style={styles.documentImage}
-              />
+            <View style={styles.imageViewer}>
+              {files.length > 0 && (
+                <Image
+                  source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }}
+                  style={styles.documentImage}
+                />
+              )}
               {/* Render the selected points */}
               {points.map((point, index) => (
                 <View
@@ -102,17 +104,6 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
   );
 };
 
-const FileUploader = ({ onFilesUploaded }: { onFilesUploaded: (files: File[]) => void }) => {
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    onFilesUploaded(files);
-  };
-
-  return (
-    <input type="file" multiple accept="image/*" onChange={handleFileChange} />
-  );
-};
-
 export default function Reader() {
   const [renamedFiles, setRenamedFiles] = useState<{ file: File; name: string }[]>([]);
 
@@ -129,8 +120,8 @@ export default function Reader() {
       <ThemedView style={styles.header}>
         <ThemedText type="title">Image Reader with AI Assistant</ThemedText>
         <View style={styles.headerControls}>
-          {/* Move FileUploader into header */}
-          <FileUploader onFilesUploaded={handleFilesUploaded} />
+
+          <FileUpload onFilesUploaded={handleFilesUploaded} />
           <Button title="Help" onPress={() => {}} />
         </View>
       </ThemedView>
