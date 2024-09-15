@@ -1,120 +1,37 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView, Pressable} from 'react-native';
+import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView, Pressable } from 'react-native';
 import FileUpload from './FileUpload';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 
-const padNumber = (num: number) => {
-  return num.toString().padStart(4, '0');
-};
+const padNumber = (num: number) => num.toString().padStart(4, '0');
 
-const AiChat = () => {
-  return (
-    <ThemedView style={styles.aiChat}>
-      <ThemedText type="title">AI Assistant Chat</ThemedText>
-      <View style={styles.chatHistory}>
-        {/* Add chat history here */}
-      </View>
-      <View style={styles.chatInput}>
-        <TextInput style={styles.input} placeholder="Ask AI..." />
-        <Button title="Send" onPress={() => {}} />
-      </View>
-    </ThemedView>
-  );
-};
+const AiChat = () => (
+  <ThemedView style={styles.aiChat}>
+    <ThemedText type="title">AI Assistant Chat</ThemedText>
+    <View style={styles.chatHistory}>
+      {/* Add chat history here */}
+    </View>
+    <View style={styles.chatInput}>
+      <TextInput style={styles.input} placeholder="Ask AI..." />
+      <Button title="Send" onPress={() => {}} />
+    </View>
+  </ThemedView>
+);
 
-const sendScreenshotData = async (file: File) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  if (!file) {
-    console.error('No file selected.');
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    const response = await fetch('ws://localhost:/3000/upload_bulk', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'multipart/form-data',
-      },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log('File upload successful', data);
-    } else {
-      console.error('File upload failed', response.statusText);
-    }
-  } catch (error) {
-    console.error('Error uploading file:', error);
-  }
-};
-
-const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
-  // Initialize points with two default values of (0, 0)
+const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name: string }[], sendScreenshotData: (file: File) => void }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [points, setPoints] = useState([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
 
-  const resetPoints = () => {
-    setPoints([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
-  };
-
   const handleImageClick = (event: any) => {
-    const { locationX, locationY } = event.nativeEvent; // Get coordinates relative to the image
-    resetPoints();
-
-    // Replace the first point and leave the second one unchanged
+    const { locationX, locationY } = event.nativeEvent;
     setPoints([{ x: locationX, y: locationY }, { x: 0, y: 0 }]);
   };
 
   const handleImagePressOut = (event: any) => {
     const { locationX, locationY } = event.nativeEvent;
-
-    // Replace the second point and leave the first one unchanged
     setPoints([points[0], { x: locationX, y: locationY }]);
   };
-
-  const sendScreenshotData = async () => {
-    const formData = new FormData();
-    const file = files[currentPage - 1].file; 
-    formData.append('file', file); 
-    try {
-      const response = await fetch('http://localhost:/3000/upload_bulk', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'multipart/form-data',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('File upload successful', data);
-      } else {
-        console.error('File upload failed', response.statusText);
-      }
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        handleNext();
-      } else if (event.key === 'ArrowLeft') {
-        handlePrevious();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [currentPage, files]);
 
   const handleNext = () => {
     setCurrentPage((prevPage) => (prevPage < files.length ? prevPage + 1 : files.length));
@@ -124,33 +41,28 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
     setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1));
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') handleNext();
+      if (event.key === 'ArrowLeft') handlePrevious();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPage, files]);
+
   return (
     <ThemedView style={styles.imageReader}>
       <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
-
-      <ScrollView 
-        style={styles.imageViewer} 
-        horizontal={false} 
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
+      <ScrollView style={styles.imageViewer} contentContainerStyle={{ flexGrow: 1 }}>
         <ScrollView>
           <Pressable onPressIn={handleImageClick} onPressOut={handleImagePressOut}>
             <View style={styles.imageViewer}>
               {files.length > 0 && (
-                <Image
-                  source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }}
-                  style={styles.documentImage}
-                />
+                <Image source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }} style={styles.documentImage} />
               )}
-              {/* Render the two points */}
               {points.map((point, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.pointMarker,
-                    { left: point.x - 10, top: point.y - 10 },
-                  ]}
-                />
+                <View key={index} style={[styles.pointMarker, { left: point.x - 10, top: point.y - 10 }]} />
               ))}
             </View>
           </Pressable>
@@ -162,19 +74,36 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
         <Button title="Next" onPress={handleNext} disabled={currentPage === files.length} />
       </View>
 
-      {/* Display the coordinates of the two points */}
       <View style={styles.coordinates}>
         <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>
         <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>
       </View>
-      <Button title="Send Screenshot" onPress={sendScreenshotData} />
+
+      <Button title="Send Screenshot" onPress={() => sendScreenshotData(files[currentPage - 1].file)} />
     </ThemedView>
   );
 };
 
-
 export default function Reader() {
   const [renamedFiles, setRenamedFiles] = useState<{ file: File; name: string }[]>([]);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const newSocket = new WebSocket('ws://localhost:3000'); // Change this URL to your server
+
+    newSocket.onopen = () => console.log('WebSocket connection opened');
+    newSocket.onmessage = (event) => console.log('Message from server:', event.data);
+    newSocket.onerror = (error) => console.error('WebSocket error:', error);
+    newSocket.onclose = () => console.log('WebSocket connection closed');
+
+    setSocket(newSocket);
+
+    // Cleanup WebSocket connection on component unmount
+    return () => {
+      newSocket.close();
+    };
+  }, []);
 
   const handleFilesUploaded = (files: File[]) => {
     const renamedFiles = files.map((file, index) => {
@@ -184,22 +113,37 @@ export default function Reader() {
     setRenamedFiles(renamedFiles);
   };
 
+  const sendScreenshotData = (file: File) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket connection is not open.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const fileData = reader.result;
+      if (socket) {
+        socket.send(fileData); // Send binary data via WebSocket
+        console.log('File sent over WebSocket');
+      }
+    };
+    reader.onerror = (error) => console.error('Error reading file:', error);
+
+    reader.readAsArrayBuffer(file); // Read the file as binary data
+  };
+
   return (
     <ThemedView style={styles.pageContainer}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Image Reader with AI Assistant</ThemedText>
         <View style={styles.headerControls}>
-
           <FileUpload onFilesUploaded={handleFilesUploaded} />
           <Button title="Help" onPress={() => {}} />
         </View>
       </ThemedView>
 
       <View style={styles.bodyContainer}>
-        {/* Image reader for displaying the uploaded images */}
-        <ImageReader files={renamedFiles} />
-
-        {/* AI Chat section */}
+        <ImageReader files={renamedFiles} sendScreenshotData={sendScreenshotData} />
         <AiChat />
       </View>
     </ThemedView>
@@ -214,7 +158,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',  // Align upload button
+    alignItems: 'center',
     padding: 16,
     backgroundColor: '#333',
     color: '#fff',
@@ -238,9 +182,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   documentImage: {
-    width: '100%', // Set large width
-    height: 800, // Set large height
-    resizeMode: 'contain', // Contain the image but let it scroll
+    width: '100%',
+    height: 800,
+    resizeMode: 'contain',
   },
   controls: {
     flexDirection: 'row',
@@ -286,5 +230,5 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#e9ecef',
     borderRadius: 4,
-  }
+  },
 });
