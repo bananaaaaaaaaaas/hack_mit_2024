@@ -56,11 +56,16 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [points, setPoints] = useState([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
 
+  const resetPoints = () => {
+    setPoints([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
+  };
+
   const handleImageClick = (event: any) => {
     const { locationX, locationY } = event.nativeEvent; // Get coordinates relative to the image
+    resetPoints();
 
     // Replace the first point and leave the second one unchanged
-    setPoints([{ x: locationX, y: locationY }, points[1]]);
+    setPoints([{ x: locationX, y: locationY }, { x: 0, y: 0 }]);
   };
 
   const handleImagePressOut = (event: any) => {
