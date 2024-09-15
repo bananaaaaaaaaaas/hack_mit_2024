@@ -23,6 +23,34 @@ const AiChat = () => {
   );
 };
 
+const sendScreenshotData = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  if (files.length === 0) return;
+
+  const formData = new FormData();
+  const file = files[currentPage - 1].file; // Current image file
+  formData.append('file', file, file.name); // Append the image file
+
+  try {
+    const response = await fetch('ws://localhost:/8000/upload_bulk', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'multipart/form-data',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('File upload successful', data);
+    } else {
+      console.error('File upload failed', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error uploading file:', error);
+  }
+};
+
 const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -100,6 +128,7 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
         {points.length > 0 && <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>}
         {points.length > 1 && <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>}
       </View>
+      <Button title="Send Screenshot" onPress={() => sendScreenshotData()} />
     </ThemedView>
   );
 };
@@ -133,6 +162,7 @@ export default function Reader() {
         {/* AI Chat section */}
         <AiChat />
       </View>
+      <Button title="Send Screenshot" onPress={() => sendScreenshotData()} />
     </ThemedView>
   );
 }
