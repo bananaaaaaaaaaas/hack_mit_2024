@@ -29,20 +29,17 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
   const [xGlobal, setxGlobal] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  var offsetx= 0, offsety=0;
+
   const resetPoints = () => {
     setPoints([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
   };
-  const handleScroll = (event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setScrollOffset(offsetY);
-  };
+
   const handleMouseDown = (event: any) => {
     const { locationX, locationY } = event.nativeEvent;
     resetPoints();
     setPoints([{ x: locationX, y: locationY }, { x: locationX, y: locationY }]); // Start the box
     setElementOffsety(yGlobal - locationY);
-    setElementOffsetx(xGlobal - locationX)
+    setElementOffsetx(xGlobal - locationX);
     setIsDrawing(true); // Start drawing mode
   };
 
@@ -51,7 +48,7 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
     setxGlobal(clientX);
     setyGlobal(clientY);
     if (!isDrawing) return;
-    setPoints([points[0], { x: clientX -elementOffsetx, y: clientY  - elementOffsety }]); // Update the second point as the mouse moves
+    setPoints([points[0], { x: clientX - elementOffsetx, y: clientY - elementOffsety }]); // Update the second point as the mouse moves
   };
 
   const handleMouseUp = (event: any) => {
@@ -63,7 +60,7 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
 
   const cropAndSendImage = () => {
     const imageFile = files[currentPage - 1].file;
-    
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -81,7 +78,6 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
       canvas.height = cropHeight;
 
       ctx?.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-      console.log("did i do anything?");
 
       canvas.toBlob((blob) => {
         if (blob) sendScreenshotData(blob);
@@ -94,7 +90,7 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
     const top = Math.min(points[0].y, points[1].y);
     const width = Math.abs(points[0].x - points[1].x);
     const height = Math.abs(points[0].y - points[1].y);
-  
+
     return {
       left,
       top,
@@ -108,8 +104,6 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
 
   return (
     <ThemedView style={styles.imageReader}>
-      {/*<ThemedText type="title"> Page {currentPage} / { files.length }</ThemedText>*/}
-
       <ScrollView style={styles.imageViewer} horizontal={false}>
         <Pressable
           onPressIn={handleMouseDown}
@@ -129,34 +123,15 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
       </ScrollView>
 
       <View style={styles.controls}>
-        <Button title="Previous" onPress={() => {resetPoints(); setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)} }/>
-        <Button title="Next" onPress={() => {resetPoints(); setCurrentPage(currentPage < files.length ? currentPage + 1 : currentPage)}} />
+        <Button title="Previous" onPress={() => { resetPoints(); setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage); }} />
+        <Button title="Next" onPress={() => { resetPoints(); setCurrentPage(currentPage < files.length ? currentPage + 1 : currentPage); }} />
       </View>
-      { /*
-      <View style={styles.coordinates}>
-        <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>
-        <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>
-      </View> */}
     </ThemedView>
   );
 };
 
 export default function Reader() {
   const [renamedFiles, setRenamedFiles] = useState<{ file: File; name: string }[]>([]);
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-
-  useEffect(() => {
-    const newSocket = new WebSocket('ws://localhost:3000'); // Replace with your WebSocket URL
-
-    newSocket.onopen = () => console.log('WebSocket connection opened');
-    newSocket.onmessage = (event) => console.log('Message from server:', event.data);
-    newSocket.onerror = (error) => console.error('WebSocket error:', error);
-    newSocket.onclose = () => console.log('WebSocket connection closed');
-
-    setSocket(newSocket);
-
-    return () => newSocket.close();
-  }, []);
 
   const handleFilesUploaded = (files: File[]) => {
     const renamedFiles = files.map((file, index) => ({ file, name: `${padNumber(index + 1)}.png` }));
@@ -164,20 +139,23 @@ export default function Reader() {
   };
 
   const sendScreenshotData = (file: Blob) => {
-    console.log(file);
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not open');
-      return;
-    }
+    const formData = new FormData();
+    formData.append('file', file, 'screenshot.png');
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      socket?.send(reader.result as ArrayBuffer); // Send binary data
-      console.log('File sent over WebSocket');
-    };
-    reader.onerror = (error) => console.error('Error reading file:', error);
-
-    reader.readAsArrayBuffer(file);
+    fetch('/bulk', {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Failed to upload image');
+        return response.json();
+      })
+      .then((data) => {
+        console.log('File uploaded successfully:', data);
+      })
+      .catch((error) => {
+        console.error('Error uploading file:', error);
+      });
   };
 
   return (
