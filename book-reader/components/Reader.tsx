@@ -18,12 +18,9 @@ const padNumber = (num: number) => num.toString().padStart(4, "0");
 const AiChat = ({ chatData }: { chatData: string }) => (
   <ThemedView style={styles.aiChat}>
     <ThemedText type="title">AI Assistant Chat</ThemedText>
-    <View style={styles.chatHistory}>
+    <View>
+      <ThemedText></ThemedText>
       <ThemedText>{chatData ? chatData : "No response yet"}</ThemedText>
-    </View>
-    <View style={styles.chatInput}>
-      <TextInput style={styles.input} placeholder="Ask AI..." />
-      <Button title="Send" onPress={() => {}} />
     </View>
   </ThemedView>
 );
@@ -187,6 +184,7 @@ const ImageReader = ({
 };
 
 export default function Reader() {
+  var chatdatatemp = "Default";
   const [renamedFiles, setRenamedFiles] = useState<
     { file: File; name: string }[]
   >([]);
@@ -199,7 +197,6 @@ export default function Reader() {
     }));
     setRenamedFiles(renamedFiles);
   };
-
   const sendScreenshotData = (file: Blob) => {
     const formData = new FormData();
     formData.append("file", file, "screenshot.png");
@@ -213,6 +210,7 @@ export default function Reader() {
         return response.json();
       })
       .then((data) => {
+        chatdatatemp = data.message;
         setChatData(data.message); // Save the response data to state
       })
       .catch((error) => {
@@ -242,6 +240,7 @@ export default function Reader() {
 }
 
 const styles = StyleSheet.create({
+
   pageContainer: { flex: 1, flexDirection: "column" },
   header: {
     flexDirection: "row",
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
   aiChat: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#e9ecef",
+    backgroundColor: "#fffffff",
     justifyContent: "space-between",
   },
   coordinates: {
