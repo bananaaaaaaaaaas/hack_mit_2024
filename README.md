@@ -1,5 +1,7 @@
 # TangoRead
 
+![Screenshot 2024-09-15 070950](https://github.com/user-attachments/assets/99180fcf-b5a6-4e1a-b252-956b3cfef06d)
+
 TangoRead is an AI-driven language learning platform that transforms the way users engage with written content. By utilizing advanced Optical Character Recognition (OCR) and Natural Language Processing (NLP) technologies, TangoRead offers interactive reading experiences with real-time translations and gamified retention tools.
 
 ## Overview
