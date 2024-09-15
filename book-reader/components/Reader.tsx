@@ -15,16 +15,19 @@ import { ThemedText } from "@/components/ThemedText";
 
 const padNumber = (num: number) => num.toString().padStart(4, "0");
 
-const AiChat = () => (
+const AiChat = ({ chatData }: { chatData: string }) => (
   <ThemedView style={styles.aiChat}>
     <ThemedText type="title">AI Assistant Chat</ThemedText>
-    <View style={styles.chatHistory}>{/* Add chat history here */}</View>
+    <View style={styles.chatHistory}>
+      <ThemedText>{chatData ? chatData : "No response yet"}</ThemedText>
+    </View>
     <View style={styles.chatInput}>
       <TextInput style={styles.input} placeholder="Ask AI..." />
       <Button title="Send" onPress={() => {}} />
     </View>
   </ThemedView>
 );
+
 
 const ImageReader = ({
   files,
@@ -188,6 +191,7 @@ export default function Reader() {
   const [renamedFiles, setRenamedFiles] = useState<
     { file: File; name: string }[]
   >([]);
+  const [chatData, setChatData] = useState<string>("");
 
   const handleFilesUploaded = (files: File[]) => {
     const renamedFiles = files.map((file, index) => ({
@@ -211,12 +215,14 @@ export default function Reader() {
         return response.json();
       })
       .then((data) => {
-        console.log("File uploaded successfully:", data);
+        setChatData(data.message); // Save the response data to state
       })
       .catch((error) => {
         console.error("Error uploading file:", error);
+        setChatData("Error uploading file");
       });
   };
+
 
   return (
     <ThemedView style={styles.pageContainer}>
