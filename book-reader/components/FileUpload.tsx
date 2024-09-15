@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-const FileUpload = ({ onFilesUploaded }: { onFilesUploaded: (files: File[]) => void }) => {
+const FileUpload = ({
+  onFilesUploaded,
+}: {
+  onFilesUploaded: (files: File[]) => void;
+}) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     onFilesUploaded(files);
