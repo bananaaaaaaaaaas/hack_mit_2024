@@ -52,7 +52,10 @@ app.post(
   "/upload_bulk",
   upload.array("file" /* name attribute of <file> element in your form */),
   (req, res) => {
+    console.log("got the files");
+    console.log(req.body);
     const files = req.files as Express.Multer.File[];
+    console.log(req.files);
     let output: string[] = [];
     files.forEach((file) => {
       if (!req.session.uploadNumber) {
