@@ -26,9 +26,8 @@ const AiChat = () => {
 const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [points, setPoints] = useState([]); // Store clicked points
-
   const handleImageClick = (event) => {
+    const [points, setPoints] = useState([]); // Store clicked points
     const { locationX, locationY } = event.nativeEvent; // Get coordinates relative to the image
     if (points.length < 2) {
       setPoints([...points, { x: locationX, y: locationY }]); // Add up to two points
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   imageReader: {
-    flex: 2,
+    flex: 3,
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
