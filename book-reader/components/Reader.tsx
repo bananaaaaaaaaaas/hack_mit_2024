@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 
@@ -49,15 +49,22 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
 
   return (
     <ThemedView style={styles.imageReader}>
-      <ThemedText type="title">Document Viewer - Page {padNumber(currentPage)}</ThemedText>
-      <View style={styles.imageViewer}>
-        {files.length > 0 && (
-          <Image
-            source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }}
-            style={styles.documentImage}
+      <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
+
+      {/* Wrap the image in a ScrollView to make it scrollable */}
+      <ScrollView 
+        style={styles.imageViewer} 
+        horizontal={false}  // Allow horizontal scrolling
+        contentContainerStyle={{ flexGrow: 1 }} // Ensures it can scroll vertically as well
+      >
+        <ScrollView>
+          <Image 
+            source={require('@/assets/images/2785.png')} 
+            style={styles.documentImage} 
           />
-        )}
-      </View>
+        </ScrollView>
+      </ScrollView>
+
       <View style={styles.controls}>
         <Button title="Previous" onPress={handlePrevious} disabled={currentPage === 1} />
         <Button title="Next" onPress={handleNext} disabled={currentPage === files.length} />
@@ -139,13 +146,12 @@ const styles = StyleSheet.create({
   },
   imageViewer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   documentImage: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'contain',
+    width: '100%', // Set large width
+    height: 800, // Set large height
+    resizeMode: 'contain', // Contain the image but let it scroll
   },
   controls: {
     flexDirection: 'row',
