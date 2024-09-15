@@ -3,6 +3,9 @@ import time
 import sys
 from manga_ocr import MangaOcr
 from pathlib import Path
+from vlm_listener import run
+
+image_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJCqSomI84vz7ZJdNYHvnJPOOe9Z_-AcO6Pfa4pPPMD3tJ19L907tLv0quBWIFEdZoWbY&usqp=CAU"
 
 def get_path_key(path):
     return path, path.lstat().st_mtime
@@ -26,7 +29,9 @@ if __name__ == "__main__":
                     logger.warning(f"Error while reading file {path}: {e}")
                 else:
                     text = mocr(img)
-                    
+                    question = f"Translate just the following text to English without further comments and then describe subtleties behind the text: {text}"
+                    text = run(image_url, question).text
+
                     if text == "それでも、":
                         print("Error: selection too large")
                     else:
