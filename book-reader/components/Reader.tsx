@@ -1,15 +1,10 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
-=======
 import { useState } from 'react';
-import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Image, TextInput, Button, StyleSheet, ScrollView, Pressable} from 'react-native';
 
->>>>>>> 86154c0 (make scrolling kinda work)
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 
-const padNumber = (num: number) => {
+const padNumber = (num) => {
     return num.toString().padStart(4, '0');
 };
 
@@ -30,46 +25,65 @@ const AiChat = () => {
 
 const ImageReader = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [points, setPoints] = useState([]); // Store clicked points
+
+  const handleImageClick = (event) => {
+    const { locationX, locationY } = event.nativeEvent; // Get coordinates relative to the image
+    if (points.length < 2) {
+      setPoints([...points, { x: locationX, y: locationY }]); // Add up to two points
+    }
+  };
 
   const handleNext = () => {
     setCurrentPage((prevPage) => (prevPage < 999 ? prevPage + 1 : 999)); // Max limit is 999
+    setPoints([]); // Reset points when page changes
   };
 
   const handlePrevious = () => {
     setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1)); // Min limit is 1
+    setPoints([]); // Reset points when page changes
   };
 
   return (
     <ThemedView style={styles.imageReader}>
-<<<<<<< HEAD
       <ThemedText type="title">Document Viewer - Page {padNumber(currentPage)}</ThemedText>
-      <View style={styles.imageViewer}>
-        <Image
-          source={{ uri: `/assets/images/${padNumber(currentPage)}.png` }} // Dynamically load the image
-          style={styles.documentImage}
-        />
-      </View>
-=======
-      <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
 
-      {/* Wrap the image in a ScrollView to make it scrollable */}
       <ScrollView 
         style={styles.imageViewer} 
-        horizontal={false}  // Allow horizontal scrolling
-        contentContainerStyle={{ flexGrow: 1 }} // Ensures it can scroll vertically as well
+        horizontal={false} 
+        contentContainerStyle={{ flexGrow: 1 }}
       >
         <ScrollView>
-          <Image 
-            source={require('@/assets/images/2785.png')} 
-            style={styles.documentImage} 
-          />
+          <Pressable onPressIn={handleImageClick} onPressOut={handleImageClick}>
+            <View>
+              <Image
+                source={{ uri: `/assets/images/${padNumber(currentPage)}.png` }}
+                style={styles.documentImage}
+              />
+              {/* Render the selected points */}
+              {points.map((point, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.pointMarker,
+                    { left: point.x - 10, top: point.y - 10 },
+                  ]}
+                />
+              ))}
+            </View>
+          </Pressable>
         </ScrollView>
       </ScrollView>
 
->>>>>>> 86154c0 (make scrolling kinda work)
       <View style={styles.controls}>
         <Button title="Previous" onPress={handlePrevious} />
         <Button title="Next" onPress={handleNext} />
+      </View>
+
+      {/* Display the coordinates of the two points */}
+      <View style={styles.coordinates}>
+        {points.length > 0 && <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>}
+        {points.length > 1 && <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>}
       </View>
     </ThemedView>
   );
@@ -121,22 +135,12 @@ const styles = StyleSheet.create({
   },
   imageViewer: {
     flex: 1,
-<<<<<<< HEAD
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  documentImage: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'contain',
-=======
     backgroundColor: '#fff',
   },
   documentImage: {
-    width: '100%', // Set large width
-    height: 800, // Set large height
-    resizeMode: 'contain', // Contain the image but let it scroll
->>>>>>> 86154c0 (make scrolling kinda work)
+    width: '100%', 
+    height: 800, 
+    resizeMode: 'contain',
   },
   controls: {
     flexDirection: 'row',
@@ -169,4 +173,18 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderRadius: 4,
   },
+  pointMarker: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'red',
+    opacity: 0.7,
+  },
+  coordinates: {
+    marginTop: 16,
+    padding: 10,
+    backgroundColor: '#e9ecef',
+    borderRadius: 4,
+  }
 });
