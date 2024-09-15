@@ -59,7 +59,7 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
       >
         <ScrollView>
           <Image 
-            source={require('@/assets/images/2785.png')} 
+            source={require('@/assets/images/0001.png')} 
             style={styles.documentImage} 
           />
         </ScrollView>
