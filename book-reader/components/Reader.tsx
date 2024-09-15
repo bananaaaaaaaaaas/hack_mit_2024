@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TextInput, Button, StyleSheet } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 
 const padNumber = (num: number) => {
-    return num.toString().padStart(4, '0');
+  return num.toString().padStart(4, '0');
 };
 
 const AiChat = () => {
@@ -22,47 +22,88 @@ const AiChat = () => {
   );
 };
 
-const ImageReader = () => {
+const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowRight') {
+        handleNext();
+      } else if (event.key === 'ArrowLeft') {
+        handlePrevious();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentPage, files]);
 
   const handleNext = () => {
-    setCurrentPage((prevPage) => (prevPage < 999 ? prevPage + 1 : 999)); // Max limit is 999
+    setCurrentPage((prevPage) => (prevPage < files.length ? prevPage + 1 : files.length));
   };
 
   const handlePrevious = () => {
-    setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1)); // Min limit is 1
+    setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1));
   };
 
   return (
     <ThemedView style={styles.imageReader}>
       <ThemedText type="title">Document Viewer - Page {padNumber(currentPage)}</ThemedText>
       <View style={styles.imageViewer}>
-        <Image
-          source={{ uri: `/assets/images/${padNumber(currentPage)}.png` }} // Dynamically load the image
-          style={styles.documentImage}
-        />
+        {files.length > 0 && (
+          <Image
+            source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }}
+            style={styles.documentImage}
+          />
+        )}
       </View>
       <View style={styles.controls}>
-        <Button title="Previous" onPress={handlePrevious} />
-        <Button title="Next" onPress={handleNext} />
+        <Button title="Previous" onPress={handlePrevious} disabled={currentPage === 1} />
+        <Button title="Next" onPress={handleNext} disabled={currentPage === files.length} />
       </View>
     </ThemedView>
   );
 };
 
+const FileUploader = ({ onFilesUploaded }: { onFilesUploaded: (files: File[]) => void }) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    onFilesUploaded(files);
+  };
+
+  return (
+    <input type="file" multiple accept="image/*" onChange={handleFileChange} />
+  );
+};
+
 export default function Reader() {
+  const [renamedFiles, setRenamedFiles] = useState<{ file: File; name: string }[]>([]);
+
+  const handleFilesUploaded = (files: File[]) => {
+    const renamedFiles = files.map((file, index) => {
+      const newName = `${padNumber(index + 1)}.png`;
+      return { file, name: newName };
+    });
+    setRenamedFiles(renamedFiles);
+  };
+
   return (
     <ThemedView style={styles.pageContainer}>
       <ThemedView style={styles.header}>
         <ThemedText type="title">Image Reader with AI Assistant</ThemedText>
         <View style={styles.headerControls}>
-          <Button title="Save" onPress={() => {}} />
+          {/* Move FileUploader into header */}
+          <FileUploader onFilesUploaded={handleFilesUploaded} />
           <Button title="Help" onPress={() => {}} />
         </View>
       </ThemedView>
 
       <View style={styles.bodyContainer}>
-        <ImageReader />
+        {/* Image reader for displaying the uploaded images */}
+        <ImageReader files={renamedFiles} />
+
+        {/* AI Chat section */}
         <AiChat />
       </View>
     </ThemedView>
@@ -77,12 +118,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',  // Align upload button
     padding: 16,
     backgroundColor: '#333',
     color: '#fff',
   },
   headerControls: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 16,
   },
   bodyContainer: {
@@ -133,6 +176,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     marginRight: 8,
-    borderRadius: 4
+    borderRadius: 4,
   },
 });
