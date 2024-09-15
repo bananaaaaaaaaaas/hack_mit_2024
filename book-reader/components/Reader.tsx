@@ -52,17 +52,24 @@ const sendScreenshotData = async () => {
 };
 
 const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
+  // Initialize points with two default values of (0, 0)
   const [currentPage, setCurrentPage] = useState(1);
+  const [points, setPoints] = useState([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
 
-  var [points, setPoints] = useState([]); // Store clicked points
-
-  const handleImageClick = (event) => {
+  const handleImageClick = (event: any) => {
     const { locationX, locationY } = event.nativeEvent; // Get coordinates relative to the image
-    if (points.length == 2) { points = [];}
-    if (points.length < 2) {
-      setPoints([...points, { x: locationX, y: locationY }]); // Add up to two points
-    }
+
+    // Replace the first point and leave the second one unchanged
+    setPoints([{ x: locationX, y: locationY }, points[1]]);
   };
+
+  const handleImagePressOut = (event: any) => {
+    const { locationX, locationY } = event.nativeEvent;
+
+    // Replace the second point and leave the first one unchanged
+    setPoints([points[0], { x: locationX, y: locationY }]);
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowRight') {
@@ -96,7 +103,7 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <ScrollView>
-          <Pressable onPressIn={handleImageClick} onPressOut={handleImageClick}>
+          <Pressable onPressIn={handleImageClick} onPressOut={handleImagePressOut}>
             <View style={styles.imageViewer}>
               {files.length > 0 && (
                 <Image
@@ -104,7 +111,7 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
                   style={styles.documentImage}
                 />
               )}
-              {/* Render the selected points */}
+              {/* Render the two points */}
               {points.map((point, index) => (
                 <View
                   key={index}
@@ -126,13 +133,14 @@ const ImageReader = ({ files }: { files: { file: File; name: string }[] }) => {
 
       {/* Display the coordinates of the two points */}
       <View style={styles.coordinates}>
-        {points.length > 0 && <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>}
-        {points.length > 1 && <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>}
+        <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>
+        <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>
       </View>
       <Button title="Send Screenshot" onPress={() => sendScreenshotData()} />
     </ThemedView>
   );
 };
+
 
 export default function Reader() {
   const [renamedFiles, setRenamedFiles] = useState<{ file: File; name: string }[]>([]);
