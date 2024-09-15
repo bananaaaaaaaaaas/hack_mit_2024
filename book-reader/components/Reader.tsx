@@ -28,7 +28,6 @@ const AiChat = ({ chatData }: { chatData: string }) => (
   </ThemedView>
 );
 
-
 const ImageReader = ({
   files,
   sendScreenshotData,
@@ -207,7 +206,6 @@ export default function Reader() {
 
     fetch("http://localhost:3000/upload_individual", {
       method: "POST",
-      mode: "no-cors",
       body: formData,
     })
       .then((response) => {
@@ -222,7 +220,6 @@ export default function Reader() {
         setChatData("Error uploading file");
       });
   };
-
 
   return (
     <ThemedView style={styles.pageContainer}>

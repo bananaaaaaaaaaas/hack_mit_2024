@@ -17,6 +17,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
     "@react-navigation/native": "^6.0.2",
+    "cors": "^2.8.5",
     "expo": "~51.0.28",
     "expo-constants": "~16.0.2",
     "expo-font": "~12.0.9",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/cors": "^2.8.17",
     "@types/express-session": "^1.18.0",
     "@types/jest": "^29.5.12",
     "@types/multer": "^1.4.12",

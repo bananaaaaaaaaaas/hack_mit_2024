@@ -4,8 +4,15 @@ import path from "path";
 import fs from "fs";
 import session from "express-session";
 import multer, { Multer } from "multer";
+import cors from "cors";
+
+const corsOptions = {
+  origin: "http://localhost:8081",
+};
 
 const app = express();
+app.use(cors(corsOptions));
+
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req: Request, res: Response) => {
@@ -83,7 +90,7 @@ app.post(
         });
       }
     });
-    res.json(output);
+    res.status(200).send(output);
   }
 );
 
@@ -124,8 +131,10 @@ app.post("/upload_individual", uploadOne.single("file"), (req, res) => {
       );
       if (fs.existsSync(outputPath)) {
         const data = fs.readFileSync(outputPath, "utf8");
+        console.log("sending response");
+        res.status(200).send(data);
+
         clearInterval(intervalId);
-        res.json(data);
       }
     }, 100);
   } else {
