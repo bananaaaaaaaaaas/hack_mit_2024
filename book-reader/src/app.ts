@@ -96,21 +96,38 @@ const uploadOne = multer({
 app.post("/upload_individual", uploadOne.single("file"), (req, res) => {
   const file = req.file as Express.Multer.File;
   const tempPath = file.path;
+  if (!req.session.uploadNumber) {
+    req.session.uploadNumber = 1;
+  } else {
+    req.session.uploadNumber += 1;
+  }
   const targetPath = path.join(
     __dirname,
-    "./assets/working_temp/" + req.sessionID + ".png"
+    "./assets/working_temp/" +
+      req.sessionID +
+      req.session.uploadNumber?.toString() +
+      ".jpg"
   );
   if (path.extname(file.originalname).toLowerCase() === ".jpg") {
     fs.rename(tempPath, targetPath, (err) => {
       if (err) return handleError(err, res);
     });
+
     const intervalId = setInterval(() => {
       // Stop after 10 iterations
-      if (count >= 10) {
+      const outputPath = path.join(
+        __dirname,
+        "./assets/working_temp/" +
+          req.sessionID +
+          req.session.uploadNumber?.toString() +
+          ".jpg"
+      );
+      if (fs.existsSync(outputPath)) {
+        const data = fs.readFileSync(outputPath, "utf8");
         clearInterval(intervalId);
+        res.json(data);
       }
-    }, 50);
-    res.json();
+    }, 100);
   } else {
     fs.unlink(tempPath, (err) => {
       if (err) return handleError(err, res);
