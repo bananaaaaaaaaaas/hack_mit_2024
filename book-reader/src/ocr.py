@@ -29,7 +29,8 @@ if __name__ == "__main__":
                     logger.warning(f"Error while reading file {path}: {e}")
                 else:
                     text = mocr(img)
-                    question = f"Translate just the following text to English without further comments and then describe subtleties behind the text: {text}"
+                    question = f"Ignore the image. First, just translate {text} to English. Then describe the Japanese connotations behind the text in a way that would help someone learning Japanese, but keep the explanation relatively short."
+                    image_url = "https://m.media-amazon.com/images/I/71vMGRog+iL._AC_UF1000,1000_QL80_.jpg"
                     text = run(image_url, question).text
 
                     if text == "それでも、":

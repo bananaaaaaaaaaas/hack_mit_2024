@@ -67,7 +67,7 @@ app.post(
           req.session.uploadNumber.toString() +
           ".png"
       );
-      if (path.extname(file.originalname).toLowerCase() === ".png") {
+      if (true) {
         fs.rename(tempPath, targetPath, (err) => {
           if (err) return handleError(err, res);
           output.push("req.sessionID + req.session.uploadNumber.toString()");
@@ -103,24 +103,24 @@ app.post("/upload_individual", uploadOne.single("file"), (req, res) => {
   }
   const targetPath = path.join(
     __dirname,
-    "./assets/working_temp/" +
+    "../assets/working_temp/" +
       req.sessionID +
       req.session.uploadNumber?.toString() +
       ".jpg"
   );
-  if (path.extname(file.originalname).toLowerCase() === ".jpg") {
+  if (true) {
     fs.rename(tempPath, targetPath, (err) => {
       if (err) return handleError(err, res);
     });
-
+    console.log("moved file");
     const intervalId = setInterval(() => {
       // Stop after 10 iterations
       const outputPath = path.join(
         __dirname,
-        "./assets/working_temp/" +
+        "../assets/working_out/" +
           req.sessionID +
           req.session.uploadNumber?.toString() +
-          ".jpg"
+          ".txt"
       );
       if (fs.existsSync(outputPath)) {
         const data = fs.readFileSync(outputPath, "utf8");
