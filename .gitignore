@@ -5,3 +5,5 @@ node_modules
 .env
 /dist
 /testing_output
+/book-reader/assets/working_out
+/book-reader/assets/working_temp
