@@ -235,7 +235,7 @@ export default function Reader() {
           files={renamedFiles}
           sendScreenshotData={sendScreenshotData}
         />
-        <AiChat />
+        <AiChat chatData={chatData} />
       </View>
     </ThemedView>
   );
