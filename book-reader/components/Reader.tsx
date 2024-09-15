@@ -108,7 +108,7 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
 
   return (
     <ThemedView style={styles.imageReader}>
-      <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
+      {/*<ThemedText type="title"> Page {currentPage} / { files.length }</ThemedText>*/}
 
       <ScrollView style={styles.imageViewer} horizontal={false}>
         <Pressable
@@ -129,14 +129,14 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
       </ScrollView>
 
       <View style={styles.controls}>
-        <Button title="Previous" onPress={() => setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)} />
-        <Button title="Next" onPress={() => setCurrentPage(currentPage < files.length ? currentPage + 1 : currentPage)} />
+        <Button title="Previous" onPress={() => {resetPoints(); setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)} }/>
+        <Button title="Next" onPress={() => {resetPoints(); setCurrentPage(currentPage < files.length ? currentPage + 1 : currentPage)}} />
       </View>
-
+      { /*
       <View style={styles.coordinates}>
         <Text>Point 1: X: {points[0].x}, Y: {points[0].y}</Text>
         <Text>Point 2: X: {points[1].x}, Y: {points[1].y}</Text>
-      </View>
+      </View> */}
     </ThemedView>
   );
 };
