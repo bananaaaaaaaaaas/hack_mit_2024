@@ -22,15 +22,43 @@ const AiChat = () => (
 const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name: string }[], sendScreenshotData: (file: File) => void }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [points, setPoints] = useState([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [elementOffsetx, setElementOffsetx] = useState(0);
+  const [elementOffsety, setElementOffsety] = useState(0);
+  const [yGlobal, setyGlobal] = useState(0);
+  const [xGlobal, setxGlobal] = useState(0);
 
-  const handleImageClick = (event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    setPoints([{ x: locationX, y: locationY }, { x: 0, y: 0 }]);
+  // Handle scroll event and update scroll offset
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setScrollOffset(offsetY);
+  };
+  const resetPoints = () => {
+    setPoints([{ x: 0, y: 0 }, { x: 0, y: 0 }]);
   };
 
-  const handleImagePressOut = (event: any) => {
+  const handleMouseDown = (event: any) => {
     const { locationX, locationY } = event.nativeEvent;
-    setPoints([points[0], { x: locationX, y: locationY }]);
+    resetPoints();
+    setPoints([{ x: locationX, y: locationY }, { x: locationX, y: locationY }]); // Start the box
+    setElementOffsety(yGlobal - locationY);
+    setElementOffsetx(xGlobal - locationX)
+    setIsDrawing(true); // Start drawing mode
+  };
+
+  const handleMouseMove = (event: any) => {
+    const { clientX, clientY } = event.nativeEvent;
+    setxGlobal(clientX);
+    setyGlobal(clientY);
+    if (!isDrawing) return;
+    setPoints([points[0], { x: clientX -elementOffsetx, y: clientY  - elementOffsety }]); // Update the second point as the mouse moves
+  };
+
+  const handleMouseUp = (event: any) => {
+    const { locationX, locationY } = event.nativeEvent;
+    setPoints([points[0], { x: locationX, y: locationY }]); // Finalize the second point
+    setIsDrawing(false); // End drawing mode
   };
 
   const handleNext = () => {
@@ -41,29 +69,47 @@ const ImageReader = ({ files, sendScreenshotData }: { files: { file: File; name:
     setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : 1));
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') handleNext();
-      if (event.key === 'ArrowLeft') handlePrevious();
+  const getBoxStyle = () => {
+    const left = Math.min(points[0].x, points[1].x);
+    const top = Math.min(points[0].y, points[1].y);
+    const width = Math.abs(points[0].x - points[1].x);
+    const height = Math.abs(points[0].y - points[1].y);
+  
+    console.log('Drawing box with dimensions:', { left, top, width, height });
+  
+    return {
+      left,
+      top,
+      width,
+      height,
+      borderColor: 'red',
+      borderWidth: 2,
+      position: 'absolute',
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, files]);
-
+  };
+  
   return (
     <ThemedView style={styles.imageReader}>
       <ThemedText type="title">Document Viewer - Page {currentPage}</ThemedText>
-      <ScrollView style={styles.imageViewer} contentContainerStyle={{ flexGrow: 1 }}>
+
+      <ScrollView
+        style={styles.imageViewer}
+        horizontal={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+        onScroll={handleScroll}
+      >
         <ScrollView>
-          <Pressable onPressIn={handleImageClick} onPressOut={handleImagePressOut}>
+          <Pressable
+            onPressIn={handleMouseDown}
+            onPressOut={handleMouseUp}
+            onMouseMove={handleMouseMove}
+          >
             <View style={styles.imageViewer}>
               {files.length > 0 && (
                 <Image source={{ uri: URL.createObjectURL(files[currentPage - 1].file) }} style={styles.documentImage} />
               )}
-              {points.map((point, index) => (
-                <View key={index} style={[styles.pointMarker, { left: point.x - 10, top: point.y - 10 }]} />
-              ))}
+              {/* Render the selection box */}
+              <View style={getBoxStyle()} />
             </View>
           </Pressable>
         </ScrollView>
