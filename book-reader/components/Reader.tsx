@@ -161,7 +161,7 @@ export default function Reader() {
   return (
     <ThemedView style={styles.pageContainer}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Image Reader with AI Assistant</ThemedText>
+        <ThemedText type="title">TangoRead</ThemedText>
         <View style={styles.headerControls}>
           <FileUpload onFilesUploaded={handleFilesUploaded} />
         </View>
